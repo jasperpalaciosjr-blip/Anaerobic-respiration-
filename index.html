@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anaerobic Respiration – Stickman Science Animation</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --ink: #1d2330;
+      --muted: #5b6578;
+      --card: #ffffff;
+      --line: #d5deea;
+      --accent: #2563eb;
+      --accent-d: #1d4ed8;
+      --warn: #e4572e;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 12px 32px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 14px;
+      margin: 4px 2px 10px;
+    }
+
+    h1 {
+      font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+      margin: 0;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .stage {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, .14);
+      border: 1px solid var(--line);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      background: #fff;
+      touch-action: manipulation;
+    }
+
+    .chip {
+      display: inline-block;
+      margin: 0 0 8px 2px;
+      background: #1d2330;
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: clamp(.78rem, 2vw, .95rem);
+      font-weight: 700;
+    }
+
+    .caption {
+      margin: 12px 2px 6px;
+      padding: 12px 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 10px;
+      font-size: clamp(.95rem, 2.2vw, 1.1rem);
+      line-height: 1.5;
+      min-height: 3.6em;
+    }
+
+    .timeline {
+      position: relative;
+      margin: 14px 2px 4px;
+      height: 46px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #e2e8f0;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      outline-offset: 3px;
+    }
+
+    .segs {
+      position: absolute;
+      inset: 0;
+      display: flex;
+    }
+
+    .seg {
+      flex-basis: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+      border-right: 2px solid #fff;
+      font-size: .78rem;
+      font-weight: 700;
+      color: #334155;
+      padding: 0 4px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .seg b {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      color: #1e293b;
+      flex: none;
+    }
+
+    .seg span {
+      display: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (min-width: 760px) {
+      .seg span { display: inline; }
+    }
+
+    .seg.on {
+      background: rgba(37, 99, 235, .16);
+    }
+
+    .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: rgba(37, 99, 235, .28);
+      pointer-events: none;
+    }
+
+    .head {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--accent-d);
+      pointer-events: none;
+      transform: translateX(-1px);
+    }
+
+    .times {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: .85rem;
+      margin: 2px 4px 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 6px 2px;
+    }
+
+    button, .filebtn {
+      font: inherit;
+      font-weight: 700;
+      font-size: .95rem;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover:not(:disabled), .filebtn:hover {
+      background: #f8fafc;
+      border-color: #b6c3d6;
+    }
+
+    button:focus-visible, .filebtn:focus-within {
+      outline: 3px solid #93c5fd;
+      outline-offset: 2px;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: var(--accent-d);
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    .filebtn input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+    }
+
+    .scenelist {
+      list-style: none;
+      margin: 14px 2px 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    }
+
+    .scenelist button {
+      width: 100%;
+      text-align: left;
+      font-weight: 600;
+      font-size: .88rem;
+      justify-content: flex-start;
+      padding: 8px 12px;
+    }
+
+    .scenelist button.on {
+      border-color: var(--accent);
+      background: #eff6ff;
+    }
+
+    .scenelist b {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: .8rem;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: .8rem;
+      margin: 14px 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Anaerobic Respiration</h1>
+      <p>Stickman science animation · Senior High School Biology</p>
+    </header>
+
+    <div class="chip" id="chip">Scene 1</div>
+    <div class="stage">
+      <canvas id="c" width="1280" height="720" role="img" aria-label="Animated stickman science explanation of anaerobic respiration: lactic acid and alcoholic fermentation"></canvas>
+    </div>
+
+    <div class="caption" id="caption" aria-live="polite"></div>
+
+    <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Animation timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="segs" id="segs"></div>
+      <div class="fill" id="fill"></div>
+      <div class="head" id="head"></div>
+    </div>
+    <div class="times"><span id="tcur">0:00</span><span id="ttot">0:00</span></div>
+
+    <div class="controls">
+      <button id="bPlay" class="primary" type="button">▶ Play</button>
+      <button id="bPause" type="button">⏸ Pause</button>
+      <button id="bRestart" type="button">↺ Restart</button>
+      <button id="bPrev" type="button" aria-label="Previous scene">⏮ Prev</button>
+      <button id="bNext" type="button" aria-label="Next scene">Next Scene ⏭</button>
+      <button id="bFull" type="button">⛶ Fullscreen</button>
+      <label class="filebtn">🎙 Add narration
+        <input id="audioFile" type="file" accept="audio/*">
+      </label>
+    </div>
+
+    <ol class="scenelist" id="sceneList"></ol>
+    <p class="note" id="audioNote">Keyboard: Space = play/pause · ← → = previous/next scene · R = restart.
+      Narration audio is optional (see the README or the NARRATION_URL setting in this file).</p>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const NARRATION_URL = '';
+
+      const SCENES = [
+        { title: 'Running late', dur: 10, caption: 'A student sprints down the hallway because class is about to start. Working muscles use ATP very quickly. After stopping, the student breathes heavily.' },
+        { title: 'Inside the muscle', dur: 8, caption: 'Zoom into the leg: a muscle is made of long muscle fibers, and each fiber is a muscle cell. ATP is made inside these cells.' },
+        { title: 'Glycolysis makes ATP', dur: 10, caption: 'In the cytoplasm, glycolysis splits one glucose into two pyruvate and gives a net gain of 2 ATP. Glycolysis does not need oxygen.' },
+        { title: 'Lactic acid fermentation', dur: 10, caption: 'When oxygen is limited, muscle cells convert pyruvate into lactate. This regenerates NAD⁺, so glycolysis can keep making ATP without oxygen.' },
+        { title: 'Alcoholic fermentation', dur: 14, caption: 'Yeast also uses glycolysis. It then converts pyruvate into ethanol and carbon dioxide (CO₂), regenerating NAD⁺ so ATP production continues without oxygen.' },
+        { title: 'Bread dough rises', dur: 9, caption: 'Yeast in dough releases CO₂ gas. The bubbles are trapped in the stretchy dough, so it rises. In baking, the ethanol evaporates and the holes left by the gas make bread soft.' },
+        { title: 'Compare the two', dur: 12, caption: 'Both pathways start with glycolysis, make a net 2 ATP, and work without oxygen by regenerating NAD⁺. The difference is the end product: lactate in muscle cells, ethanol + CO₂ in yeast.' }
+      ];
+
+      const W = 1280;
+      const H = 720;
+      const cv = document.getElementById('c');
+      const ctx = cv.getContext('2d');
+      const chip = document.getElementById('chip');
+      const captionEl = document.getElementById('caption');
+      const timeline = document.getElementById('timeline');
+      const segs = document.getElementById('segs');
+      const fill = document.getElementById('fill');
+      const head = document.getElementById('head');
+      const tcur = document.getElementById('tcur');
+      const ttot = document.getElementById('ttot');
+      const sceneList = document.getElementById('sceneList');
+      const bPlay = document.getElementById('bPlay');
+      const bPause = document.getElementById('bPause');
+      const bRestart = document.getElementById('bRestart');
+      const bPrev = document.getElementById('bPrev');
+      const bNext = document.getElementById('bNext');
+      const bFull = document.getElementById('bFull');
+
+      const starts = [];
+      let total = 0;
+      SCENES.forEach((scene) => {
+        starts.push(total);
+        total += scene.dur;
+      });
+
+      let currentTime = 0;
+      let isPlaying = false;
+      let raf = null;
+      let audio = null;
+
+      function clamp(x, a = 0, b = 1) {
+        return Math.min(b, Math.max(a, x));
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function formatTime(seconds) {
+        const whole = Math.floor(seconds);
+        const mins = Math.floor(whole / 60);
+        const secs = whole % 60;
+        return `${mins}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function locate(t) {
+        for (let i = SCENES.length - 1; i >= 0; i--) {
+          if (t >= starts[i]) {
+            return { i, lt: Math.min(t - starts[i], SCENES[i].dur) };
+          }
+        }
+        return { i: 0, lt: 0 };
+      }
+
+      function setCaption() {
+        const scene = locate(currentTime);
+        captionEl.textContent = SCENES[scene.i].caption;
+        chip.textContent = `Scene ${scene.i + 1}`;
+      }
+
+      function buildTimeline() {
+        segs.innerHTML = '';
+        SCENES.forEach((scene, index) => {
+          const segEl = document.createElement('div');
+          segEl.className = 'seg';
+          if (index === locate(currentTime).i) segEl.classList.add('on');
+          segEl.innerHTML = `<b>${index + 1}</b><span>${scene.title}</span>`;
+          segs.appendChild(segEl);
+        });
+      }
+
+      function updateTimeline() {
+        const scene = locate(currentTime);
+        const pct = (currentTime / total) * 100;
+        const scenePct = (scene.lt / SCENES[scene.i].dur) * 100;
+        fill.style.width = `${pct}%`;
+        head.style.left = `${pct}%`;
+        tcur.textContent = formatTime(currentTime);
+        ttot.textContent = formatTime(total);
+        chip.textContent = `Scene ${scene.i + 1}`;
+        captionEl.textContent = SCENES[scene.i].caption;
+        document.querySelectorAll('.seg').forEach((segEl, index) => {
+          segEl.classList.toggle('on', index === scene.i);
+        });
+        timeline.setAttribute('aria-valuenow', String(Math.round(pct)));
+        timeline.setAttribute('aria-valuetext', `Scene ${scene.i + 1} of ${SCENES.length}`);
+        const listButtons = [...sceneList.querySelectorAll('button')];
+        listButtons.forEach((btn, index) => btn.classList.toggle('on', index === scene.i));
+      }
+
+      function setScene(index) {
+        currentTime = starts[index];
+        updateTimeline();
+        draw();
+      }
+
+      function play() {
+        isPlaying = true;
+        bPlay.classList.add('primary');
+        if (raf) cancelAnimationFrame(raf);
+        const tick = () => {
+          if (!isPlaying) return;
+          currentTime += 1 / 60;
+          if (currentTime >= total) {
+            currentTime = total;
+            isPlaying = false;
+            updateTimeline();
+            draw();
+            return;
+          }
+          updateTimeline();
+          draw();
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      }
+
+      function pause() {
+        isPlaying = false;
+        if (raf) cancelAnimationFrame(raf);
+      }
+
+      function restart() {
+        currentTime = 0;
+        updateTimeline();
+        draw();
+      }
+
+      function nextScene() {
+        const scene = locate(currentTime);
+        const next = Math.min(SCENES.length - 1, scene.i + 1);
+        currentTime = starts[next];
+        updateTimeline();
+        draw();
+      }
+
+      function prevScene() {
+        const scene = locate(currentTime);
+        const prev = Math.max(0, scene.i - 1);
+        currentTime = starts[prev];
+        updateTimeline();
+        draw();
+      }
+
+      function showSceneList() {
+        sceneList.innerHTML = '';
+        SCENES.forEach((scene, index) => {
+          const li = document.createElement('li');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.innerHTML = `<b>${index + 1}</b><span>${scene.title}</span>`;
+          button.addEventListener('click', () => {
+            currentTime = starts[index];
+            updateTimeline();
+            draw();
+          });
+          li.appendChild(button);
+          sceneList.appendChild(li);
+        });
+      }
+
+      function initAudio() {
+        if (!NARRATION_URL) return;
+        const audioEl = new Audio(NARRATION_URL);
+        audioEl.preload = 'auto';
+        audio = audioEl;
+      }
+
+      function renderBackground() {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#f8fbff');
+        g.addColorStop(1, '#edf6ff');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = '#dbeafe';
+        for (let i = 0; i < 7; i++) {
+          const x = 100 + i * 160;
+          ctx.fillRect(x, 90, 90, 160);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x + 10, 100, 70, 140);
+          ctx.fillStyle = '#dbeafe';
+        }
+
+        ctx.fillStyle = '#d6d3d1';
+        ctx.fillRect(0, 570, W, 150);
+        ctx.fillStyle = '#a3a3a3';
+        ctx.fillRect(0, 560, W, 12);
+      }
+
+      function drawStick(x, y, scale, phase, pose = 'run', color = '#1d2330') {
+        const s = scale;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        const legSwing = Math.sin(phase * 2.6);
+        const armSwing = Math.sin(phase * 2.6 + Math.PI / 2);
+
+        const hip = { x: 0, y: 0 };
+        const torso = { x: 0, y: -68 * s };
+        const headPos = { x: 0, y: -120 * s };
+        const leftKnee = { x: 22 * s, y: 42 * s + legSwing * 14 * s };
+        const rightKnee = { x: -22 * s, y: 42 * s - legSwing * 14 * s };
+        const leftFoot = { x: 50 * s, y: 104 * s + Math.abs(legSwing) * 10 * s };
+        const rightFoot = { x: -50 * s, y: 104 * s - Math.abs(legSwing) * 10 * s };
+        const leftHand = { x: 28 * s + armSwing * 12 * s, y: -70 * s };
+        const rightHand = { x: -28 * s - armSwing * 12 * s, y: -70 * s };
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 8 * s;
+
+        ctx.beginPath();
+        ctx.moveTo(hip.x, hip.y);
+        ctx.lineTo(torso.x, torso.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(hip.x, hip.y);
+        ctx.lineTo(leftKnee.x, leftKnee.y);
+        ctx.lineTo(leftFoot.x, leftFoot.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(hip.x, hip.y);
+        ctx.lineTo(rightKnee.x, rightKnee.y);
+        ctx.lineTo(rightFoot.x, rightFoot.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(torso.x, torso.y);
+        ctx.lineTo(leftHand.x, leftHand.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(torso.x, torso.y);
+        ctx.lineTo(rightHand.x, rightHand.y);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 10 * s;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(0, -18 * s);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(headPos.x, headPos.y, 18 * s, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 4 * s;
+        ctx.stroke();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(-6 * s, -6 * s, 2.4 * s, 0, Math.PI * 2);
+        ctx.arc(6 * s, -6 * s, 2.4 * s, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(0, 2 * s, 8 * s, 0.15, Math.PI - 0.15);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawMolecule(type, x, y, scale = 1, alpha = 1) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        switch (type) {
+          case 'glucose': {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const a = (Math.PI / 3) * i + Math.PI / 6;
+              const px = Math.cos(a) * 38;
+              const py = Math.sin(a) * 38;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#fbbf24';
+            ctx.fill();
+            ctx.strokeStyle = '#b45309';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            break;
+          }
+          case 'pyruvate': {
+            ctx.fillStyle = '#2dd4bf';
+            ctx.beginPath();
+            ctx.arc(0, 0, 25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0f766e';
+            for (const p of [[-10, 4], [10, -8], [0, 12]]) {
+              ctx.beginPath();
+              ctx.arc(p[0], p[1], 6, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            break;
+          }
+          case 'lactate': {
+            ctx.fillStyle = '#c4b5fd';
+            ctx.fillRect(-28, -20, 56, 40);
+            ctx.strokeStyle = '#6d28d9';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-28, -20, 56, 40);
+            break;
+          }
+          case 'ethanol': {
+            ctx.strokeStyle = '#166534';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(-18, 8); ctx.lineTo(0, -8); ctx.lineTo(18, 8);
+            ctx.stroke();
+            ctx.fillStyle = '#86efac';
+            for (const p of [[-18, 8], [0, -8], [18, 8]]) {
+              ctx.beginPath();
+              ctx.arc(p[0], p[1], 10, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            break;
+          }
+          case 'co2': {
+            ctx.fillStyle = '#dbeafe';
+            ctx.beginPath();
+            ctx.arc(-18, 0, 12, 0, Math.PI * 2);
+            ctx.arc(18, 0, 12, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#475569';
+            ctx.beginPath();
+            ctx.arc(0, 0, 12, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 'atp': {
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-30, -18, 60, 36);
+            ctx.strokeStyle = '#a16207';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-30, -18, 60, 36);
+            ctx.fillStyle = '#713f12';
+            ctx.font = 'bold 20px system-ui';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ATP', 0, 0);
+            break;
+          }
+          case 'nadh': {
+            ctx.fillStyle = '#f9a8d4';
+            ctx.fillRect(-34, -15, 68, 30);
+            ctx.strokeStyle = '#be185d';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-34, -15, 68, 30);
+            ctx.fillStyle = '#831843';
+            ctx.font = 'bold 18px system-ui';
+            ctx.fillText('NADH', 0, 0);
+            break;
+          }
+          case 'nad': {
+            ctx.fillStyle = '#bfdbfe';
+            ctx.fillRect(-34, -15, 68, 30);
+            ctx.strokeStyle = '#1d4ed8';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-34, -15, 68, 30);
+            ctx.fillStyle = '#1e3a8a';
+            ctx.font = 'bold 18px system-ui';
+            ctx.fillText('NAD⁺', 0, 0);
+            break;
+          }
+          default:
+            break;
+        }
+
+        ctx.restore();
+      }
+
+      function arrow(x1, y1, x2, y2, color = '#334155', width = 4) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const headLen = 18;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawScene0(t) {
+        const p = (t % 10) / 10;
+        const x = 320 + t * 18;
+        drawStick(x, 460, 1.5, t * 6.5, 'run', '#1d2330');
+        drawMolecule('atp', 760, 230, 0.7, 0.9);
+        drawMolecule('atp', 850, 265, 0.6, 0.75);
+      }
+
+      function drawScene1(t) {
+        ctx.fillStyle = '#eff6ff';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#dbeafe';
+        ctx.fillRect(120, 120, 300, 300);
+        ctx.strokeStyle = '#93c5fd';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 7; i++) {
+          ctx.beginPath();
+          ctx.moveTo(160 + i * 30, 140);
+          ctx.lineTo(160 + i * 30, 380);
+          ctx.stroke();
+        }
+
+        drawStick(430, 460, 1.8, t * 2.4, 'stand', '#1d2330');
+        drawMolecule('atp', 760, 250, 0.9, 1);
+        drawMolecule('atp', 900, 300, 0.8, 0.9);
+        ctx.fillStyle = '#334155';
+        ctx.font = '700 28px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Muscle fiber', 430, 110);
+      }
+
+      function drawScene2(t) {
+        const glow = 0.5 + 0.5 * Math.sin(t * 5);
+        ctx.fillStyle = '#eefdf7';
+        ctx.fillRect(0, 0, W, H);
+
+        drawMolecule('glucose', 260, 350, 1.2, 1);
+        arrow(380, 350, 540, 350, '#2563eb', 4);
+        drawMolecule('pyruvate', 760, 350, 1, 1);
+        drawMolecule('pyruvate', 920, 350, 1, 1);
+        drawMolecule('atp', 760, 520, 0.85, 1);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '700 28px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Glycolysis: glucose → 2 pyruvate + 2 ATP', 640, 140);
+
+        const a = 0.3 + glow * 0.7;
+        drawMolecule('atp', 760, 520, 0.85, a);
+      }
+
+      function drawScene3(t) {
+        ctx.fillStyle = '#eef2ff';
+        ctx.fillRect(0, 0, W, H);
+        drawMolecule('pyruvate', 340, 320, 1, 1);
+        arrow(450, 320, 620, 320, '#2563eb', 4);
+        drawMolecule('lactate', 780, 320, 1, 1);
+        drawMolecule('nad', 450, 520, 0.9, 1);
+        drawMolecule('nadh', 720, 520, 0.9, 1);
+        arrow(540, 520, 650, 520, '#0f172a', 4);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '700 28px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Lactic acid fermentation in muscle cells', 640, 140);
+        ctx.font = '500 22px system-ui';
+        ctx.fillText('pyruvate → lactate, regenerates NAD⁺', 640, 620);
+      }
+
+      function drawScene4(t) {
+        ctx.fillStyle = '#f0fdf4';
+        ctx.fillRect(0, 0, W, H);
+        drawMolecule('pyruvate', 340, 320, 1, 1);
+        arrow(450, 320, 620, 320, '#2563eb', 4);
+        drawMolecule('ethanol', 780, 280, 1.1, 1);
+        drawMolecule('co2', 860, 400, 1, 1);
+        drawMolecule('nad', 450, 520, 0.9, 1);
+        drawMolecule('nadh', 720, 520, 0.9, 1);
+        arrow(540, 520, 650, 520, '#0f172a', 4);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '700 28px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Alcoholic fermentation in yeast', 640, 140);
+        ctx.font = '500 22px system-ui';
+        ctx.fillText('pyruvate → ethanol + CO₂, regenerates NAD⁺', 640, 620);
+      }
+
+      function drawScene5(t) {
+        ctx.fillStyle = '#fff7ed';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(220, 240, 250, 160);
+        ctx.fillStyle = '#fef3c7';
+        ctx.fillRect(250, 260, 190, 120);
+
+        for (let i = 0; i < 8; i++) {
+          const x = 250 + i * 20;
+          const y = 300 + Math.sin(t * 6 + i) * 14;
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.beginPath();
+          ctx.arc(x, y, 10 + (i % 3), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        drawMolecule('co2', 980, 300, 1.1, 1);
+        drawMolecule('ethanol', 860, 430, 0.8, 1);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '700 28px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Bread dough rises', 640, 140);
+        ctx.font = '500 22px system-ui';
+        ctx.fillText('CO₂ bubbles get trapped and make the dough rise', 640, 620);
+      }
+
+      function drawScene6(t) {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, W, H);
+
+        const leftX = 260;
+        const rightX = 860;
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(leftX, 220, 220, 240);
+        ctx.fillRect(rightX, 220, 220, 240);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(leftX, 220, 220, 240);
+        ctx.strokeRect(rightX, 220, 220, 240);
+
+        drawMolecule('lactate', leftX + 110, 320, 1, 1);
+        drawMolecule('atp', leftX + 110, 470, 0.65, 1);
+        drawMolecule('ethanol', rightX + 110, 300, 1, 1);
+        drawMolecule('co2', rightX + 110, 430, 1, 1);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '700 26px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('Compare the two pathways', 640, 140);
+        ctx.font = '600 24px system-ui';
+        ctx.fillText('Muscle cells', leftX + 110, 200);
+        ctx.fillText('Yeast cells', rightX + 110, 200);
+        ctx.font = '500 20px system-ui';
+        ctx.fillText('lactate', leftX + 110, 590);
+        ctx.fillText('ethanol + CO₂', rightX + 110, 590);
+      }
+
+      function drawScene(sceneIdx, localT) {
+        switch (sceneIdx) {
+          case 0: drawScene0(localT); break;
+          case 1: drawScene1(localT); break;
+          case 2: drawScene2(localT); break;
+          case 3: drawScene3(localT); break;
+          case 4: drawScene4(localT); break;
+          case 5: drawScene5(localT); break;
+          case 6: drawScene6(localT); break;
+          default: break;
+        }
+      }
+
+      function draw() {
+        renderBackground();
+        const scene = locate(currentTime);
+        drawScene(scene.i, scene.lt);
+        updateTimeline();
+      }
+
+      function attachEvents() {
+        bPlay.addEventListener('click', () => {
+          if (isPlaying) return;
+          play();
+        });
+
+        bPause.addEventListener('click', () => pause());
+        bRestart.addEventListener('click', () => restart());
+        bPrev.addEventListener('click', () => prevScene());
+        bNext.addEventListener('click', () => nextScene());
+
+        bFull.addEventListener('click', () => {
+          const stage = document.querySelector('.stage');
+          if (!document.fullscreenElement) {
+            stage.requestFullscreen?.();
+          } else {
+            document.exitFullscreen?.();
+          }
+        });
+
+        document.getElementById('audioFile').addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          const url = URL.createObjectURL(file);
+          if (audio) audio.pause();
+          audio = new Audio(url);
+          audio.loop = true;
+          if (isPlaying) audio.play();
+        });
+
+        timeline.addEventListener('click', (event) => {
+          const rect = timeline.getBoundingClientRect();
+          const ratio = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+          currentTime = ratio * total;
+          draw();
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.code === 'Space') {
+            event.preventDefault();
+            if (isPlaying) pause(); else play();
+          }
+          if (event.key === 'ArrowRight') nextScene();
+          if (event.key === 'ArrowLeft') prevScene();
+          if (event.key.toLowerCase() === 'r') restart();
+        });
+      }
+
+      function init() {
+        buildTimeline();
+        showSceneList();
+        initAudio();
+        updateTimeline();
+        draw();
+        attachEvents();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
